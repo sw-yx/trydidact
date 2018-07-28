@@ -13,10 +13,19 @@ const appElement = () => (
 )
 function LabeledSlider() {
   return <input type="range" min={20} max={80} value={state} 
+  // onInput={e$ => {
+  //   e$.subscribe(e => {
+  //     state = e.target.value;
+  //     render(appElement(), document.getElementById("app"));
+  //   })
+  // }}
+
   onInput={e => {
-    state = e.target.value;
-    render(appElement(), document.getElementById("app"));
-  }}/>
+      state = e.target.value;
+      console.log(state)
+      render(appElement(), document.getElementById("app"));
+  }}
+  />
 }
 
 

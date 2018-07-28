@@ -1,9 +1,12 @@
 import { TEXT_ELEMENT } from "./element";
+import Observable from 'zen-observable';
+// import { fromEvent } from 'rxjs';
 
 let rootInstance = null;
 
 export function render(element, container) {
   const prevInstance = rootInstance;
+  // console.log('rendering')
   const nextInstance = reconcile(container, prevInstance, element);
   rootInstance = nextInstance;
 }
@@ -91,6 +94,21 @@ function updateDomProperties(dom, prevProps, nextProps) {
   // Add event listeners
   Object.keys(nextProps).filter(isEvent).forEach(name => {
     const eventType = name.toLowerCase().substring(2);
-    dom.addEventListener(eventType, nextProps[name]);
+    // dom.addEventListener(eventType, nextProps[name]);
+    // nextProps[name](fromEvent(dom, eventType))
+    if (!dom[name + '$']) { // note - bug if handler mutates
+      const stream = fromEvent(dom, eventType)
+      stream.subscribe(nextProps[name])
+      dom[name + '$'] = stream
+    }
   });
+}
+
+// shim!
+function fromEvent(el, eventType) {
+  return new Observable(observer => {
+    el.addEventListener(eventType, e => observer.next(e))
+    // on unsub, remove event listener
+    return () => console.log('not implemented yet')
+  })
 }

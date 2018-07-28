@@ -342,64 +342,71 @@ var _didact = require("./src/didact");
 
 require("./index.css");
 
+// // this is cyclejs https://jsbin.com/yojoho/embed?js,output
 /** @jsx createElement */
-var randomLikes = function randomLikes() {
-  return Math.ceil(Math.random() * 100);
-};
-
-var stories = [{
-  name: "Didact introduction",
-  likes: randomLikes()
-}, {
-  name: "Rendering DOM elements ",
-  likes: randomLikes()
-}, {
-  name: "Element creation and JSX",
-  likes: randomLikes()
-}, {
-  name: "Instances and reconciliation",
-  likes: randomLikes()
-}, {
-  name: "Components and state",
-  likes: randomLikes()
-}];
-
+var state = 50;
 var appElement = function appElement() {
   return (0, _didact.createElement)(
     "div",
     null,
+    LabeledSlider(),
     (0, _didact.createElement)(
-      "ul",
+      "div",
       null,
-      stories.map(storyElement)
+      state
     )
   );
 };
-
-function storyElement(story) {
-  return (0, _didact.createElement)(
-    "li",
-    null,
-    (0, _didact.createElement)(
-      "button",
-      { onClick: function onClick(e) {
-          return handleClick(story);
-        } },
-      story.likes,
-      (0, _didact.createElement)(
-        "b",
-        null,
-        "\u2764\uFE0F"
-      )
-    ),
-    story.name
-  );
+function LabeledSlider() {
+  return (0, _didact.createElement)("input", { type: "range", min: 20, max: 80, value: state,
+    onInput: function onInput(e) {
+      state = e.target.value;
+      (0, _didact.render)(appElement(), document.getElementById("app"));
+    } });
 }
 
-function handleClick(story) {
-  story.likes += 1;
-  (0, _didact.render)(appElement(), document.getElementById("app"));
-}
+// //  this is didact
+
+// const randomLikes = () => Math.ceil(Math.random() * 100);
+
+// const stories = [
+//   {
+//     name: "Didact introduction",
+//     likes: randomLikes()
+//   },
+//   {
+//     name: "Rendering DOM elements ",
+//     likes: randomLikes()
+//   },
+//   {
+//     name: "Element creation and JSX",
+//     likes: randomLikes()
+//   },
+//   {
+//     name: "Instances and reconciliation",
+//     likes: randomLikes()
+//   },
+//   {
+//     name: "Components and state",
+//     likes: randomLikes()
+//   }
+// ];
+
+// const appElement = () => <div><ul>{stories.map(storyElement)}</ul></div>;
+
+// function storyElement(story) {
+//   return (
+//     <li>
+//       <button onClick={e => handleClick(story)}>{story.likes}<b>❤️</b></button>
+//       {story.name}
+//     </li>
+//   );
+// }
+
+// function handleClick(story) {
+//   story.likes += 1;
+//   render(appElement(), document.getElementById("app"));
+// }
 
 (0, _didact.render)(appElement(), document.getElementById("app"));
 
@@ -452,7 +459,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '63970' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '59046' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 

@@ -13,7 +13,7 @@ class App extends Component {
     return (
       <div>
         {" "}
-        hello world, this is didact.js {this.state.test} running in parcel{" "}
+        hello boop, this is didact.js {this.state.test} running in parcel{" "}
         <button onClick={this.click.bind(this)}>test </button>
       </div>
     );

@@ -134,13 +134,90 @@ function createElement(type, config) {
 function createTextElement(value) {
   return createElement(TEXT_ELEMENT, { nodeValue: value });
 }
-},{}],"src/dom-utils.js":[function(require,module,exports) {
+},{}],"src/reconciler.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.updateDomProperties = updateDomProperties;
+exports.render = render;
+
+var _element = require("./element");
+
+var rootInstance = null;
+
+function render(element, container) {
+  var prevInstance = rootInstance;
+  var nextInstance = reconcile(container, prevInstance, element);
+  rootInstance = nextInstance;
+}
+
+function reconcile(parentDom, instance, element) {
+  if (instance == null) {
+    // Create instance
+    var newInstance = instantiate(element);
+    parentDom.appendChild(newInstance.dom);
+    return newInstance;
+  } else if (element == null) {
+    // Remove instance
+    parentDom.removeChild(instance.dom);
+    return null;
+  } else if (instance.element.type === element.type) {
+    // Update instance
+    updateDomProperties(instance.dom, instance.element.props, element.props);
+    instance.childInstances = reconcileChildren(instance, element);
+    instance.element = element;
+    return instance;
+  } else {
+    // Replace instance
+    var _newInstance = instantiate(element);
+    parentDom.replaceChild(_newInstance.dom, instance.dom);
+    return _newInstance;
+  }
+}
+
+function reconcileChildren(instance, element) {
+  var dom = instance.dom;
+  var childInstances = instance.childInstances;
+  var nextChildElements = element.props.children || [];
+  var newChildInstances = [];
+  var count = Math.max(childInstances.length, nextChildElements.length);
+  for (var i = 0; i < count; i++) {
+    var childInstance = childInstances[i];
+    var childElement = nextChildElements[i];
+    var newChildInstance = reconcile(dom, childInstance, childElement);
+    newChildInstances.push(newChildInstance);
+  }
+  return newChildInstances.filter(function (instance) {
+    return instance != null;
+  });
+}
+
+function instantiate(element) {
+  var type = element.type,
+      props = element.props;
+
+  // Create DOM element
+
+  var isTextElement = type === "TEXT ELEMENT";
+  var dom = isTextElement ? document.createTextNode("") : document.createElement(type);
+
+  updateDomProperties(dom, [], props);
+
+  // Instantiate and append children
+  var childElements = props.children || [];
+  var childInstances = childElements.map(instantiate);
+  var childDoms = childInstances.map(function (childInstance) {
+    return childInstance.dom;
+  });
+  childDoms.forEach(function (childDom) {
+    return dom.appendChild(childDom);
+  });
+
+  var instance = { dom: dom, element: element, childInstances: childInstances };
+  return instance;
+}
+
 function updateDomProperties(dom, prevProps, nextProps) {
   var isEvent = function isEvent(name) {
     return name.startsWith("on");
@@ -171,243 +248,182 @@ function updateDomProperties(dom, prevProps, nextProps) {
     dom.addEventListener(eventType, nextProps[name]);
   });
 }
-},{}],"src/reconciler.js":[function(require,module,exports) {
+},{"./element":"src/element.js"}],"src/didact.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.render = render;
-exports.reconcile = reconcile;
-
-var _domUtils = require("./dom-utils");
+exports.render = exports.createElement = undefined;
 
 var _element = require("./element");
-
-var _component = require("./component");
-
-var rootInstance = null;
-
-function render(element, container) {
-  var prevInstance = rootInstance;
-  var nextInstance = reconcile(container, prevInstance, element);
-  rootInstance = nextInstance;
-}
-
-function reconcile(parentDom, instance, element) {
-  if (instance == null) {
-    // Create instance
-    var newInstance = instantiate(element);
-    parentDom.appendChild(newInstance.dom);
-    return newInstance;
-  } else if (element == null) {
-    // Remove instance
-    parentDom.removeChild(instance.dom);
-    return null;
-  } else if (instance.element.type !== element.type) {
-    // Replace instance
-    var _newInstance = instantiate(element);
-    parentDom.replaceChild(_newInstance.dom, instance.dom);
-    return _newInstance;
-  } else if (typeof element.type === "string") {
-    // Update dom instance
-    (0, _domUtils.updateDomProperties)(instance.dom, instance.element.props, element.props);
-    instance.childInstances = reconcileChildren(instance, element);
-    instance.element = element;
-    return instance;
-  } else {
-    //Update composite instance
-    instance.publicInstance.props = element.props;
-    var childElement = instance.publicInstance.render();
-    var oldChildInstance = instance.childInstance;
-    var childInstance = reconcile(parentDom, oldChildInstance, childElement);
-    instance.dom = childInstance.dom;
-    instance.childInstance = childInstance;
-    instance.element = element;
-    return instance;
-  }
-}
-
-function reconcileChildren(instance, element) {
-  var dom = instance.dom;
-  var childInstances = instance.childInstances;
-  var nextChildElements = element.props.children || [];
-  var newChildInstances = [];
-  var count = Math.max(childInstances.length, nextChildElements.length);
-  for (var i = 0; i < count; i++) {
-    var childInstance = childInstances[i];
-    var childElement = nextChildElements[i];
-    var newChildInstance = reconcile(dom, childInstance, childElement);
-    newChildInstances.push(newChildInstance);
-  }
-  return newChildInstances.filter(function (instance) {
-    return instance != null;
-  });
-}
-
-function instantiate(element) {
-  var type = element.type,
-      props = element.props;
-
-  var isDomElement = typeof type === "string";
-
-  if (isDomElement) {
-    // Instantiate DOM element
-    var isTextElement = type === _element.TEXT_ELEMENT;
-    var dom = isTextElement ? document.createTextNode("") : document.createElement(type);
-
-    (0, _domUtils.updateDomProperties)(dom, [], props);
-
-    var childElements = props.children || [];
-    var childInstances = childElements.map(instantiate);
-    var childDoms = childInstances.map(function (childInstance) {
-      return childInstance.dom;
-    });
-    childDoms.forEach(function (childDom) {
-      return dom.appendChild(childDom);
-    });
-
-    var instance = { dom: dom, element: element, childInstances: childInstances };
-    return instance;
-  } else {
-    // Instantiate component element
-    var _instance = {};
-    var publicInstance = (0, _component.createPublicInstance)(element, _instance);
-    var childElement = publicInstance.render();
-    var childInstance = instantiate(childElement);
-    var _dom = childInstance.dom;
-
-    Object.assign(_instance, { dom: _dom, element: element, childInstance: childInstance, publicInstance: publicInstance });
-    return _instance;
-  }
-}
-},{"./dom-utils":"src/dom-utils.js","./element":"src/element.js","./component":"src/component.js"}],"src/component.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.Component = undefined;
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-exports.createPublicInstance = createPublicInstance;
-
-var _reconciler = require("./reconciler");
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var Component = exports.Component = function () {
-  function Component(props) {
-    _classCallCheck(this, Component);
-
-    this.props = props;
-    this.state = this.state || {};
-  }
-
-  _createClass(Component, [{
-    key: "setState",
-    value: function setState(partialState) {
-      this.state = Object.assign({}, this.state, partialState);
-      updateInstance(this.__internalInstance);
-    }
-  }]);
-
-  return Component;
-}();
-
-function updateInstance(internalInstance) {
-  var parentDom = internalInstance.dom.parentNode;
-  var element = internalInstance.element;
-  (0, _reconciler.reconcile)(parentDom, internalInstance, element);
-}
-
-function createPublicInstance(element, internalInstance) {
-  var type = element.type,
-      props = element.props;
-
-  var publicInstance = new type(props);
-  publicInstance.__internalInstance = internalInstance;
-  return publicInstance;
-}
-},{"./reconciler":"src/reconciler.js"}],"src/didact.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.render = exports.Component = exports.createElement = undefined;
-
-var _element = require("./element");
-
-var _component = require("./component");
 
 var _reconciler = require("./reconciler");
 
 exports.default = {
   createElement: _element.createElement,
-  Component: _component.Component,
+  // Component,
   render: _reconciler.render
 };
-exports.createElement = _element.createElement;
-exports.Component = _component.Component;
-exports.render = _reconciler.render;
-},{"./element":"src/element.js","./component":"src/component.js","./reconciler":"src/reconciler.js"}],"index.js":[function(require,module,exports) {
-"use strict";
+// import { Component } from "./component";
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+exports.createElement = _element.createElement;
+exports.render = _reconciler.render;
+},{"./element":"src/element.js","./reconciler":"src/reconciler.js"}],"node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
+var bundleURL = null;
+function getBundleURLCached() {
+  if (!bundleURL) {
+    bundleURL = getBundleURL();
+  }
+
+  return bundleURL;
+}
+
+function getBundleURL() {
+  // Attempt to find the URL of the current script and use that as the base URL
+  try {
+    throw new Error();
+  } catch (err) {
+    var matches = ('' + err.stack).match(/(https?|file|ftp):\/\/[^)\n]+/g);
+    if (matches) {
+      return getBaseURL(matches[0]);
+    }
+  }
+
+  return '/';
+}
+
+function getBaseURL(url) {
+  return ('' + url).replace(/^((?:https?|file|ftp):\/\/.+)\/[^/]+$/, '$1') + '/';
+}
+
+exports.getBundleURL = getBundleURLCached;
+exports.getBaseURL = getBaseURL;
+},{}],"node_modules/parcel-bundler/src/builtins/css-loader.js":[function(require,module,exports) {
+var bundle = require('./bundle-url');
+
+function updateLink(link) {
+  var newLink = link.cloneNode();
+  newLink.onload = function () {
+    link.remove();
+  };
+  newLink.href = link.href.split('?')[0] + '?' + Date.now();
+  link.parentNode.insertBefore(newLink, link.nextSibling);
+}
+
+var cssTimeout = null;
+function reloadCSS() {
+  if (cssTimeout) {
+    return;
+  }
+
+  cssTimeout = setTimeout(function () {
+    var links = document.querySelectorAll('link[rel="stylesheet"]');
+    for (var i = 0; i < links.length; i++) {
+      if (bundle.getBaseURL(links[i].href) === bundle.getBundleURL()) {
+        updateLink(links[i]);
+      }
+    }
+
+    cssTimeout = null;
+  }, 50);
+}
+
+module.exports = reloadCSS;
+},{"./bundle-url":"node_modules/parcel-bundler/src/builtins/bundle-url.js"}],"index.css":[function(require,module,exports) {
+
+var reloadCSS = require('_css_loader');
+module.hot.dispose(reloadCSS);
+module.hot.accept(reloadCSS);
+},{"_css_loader":"node_modules/parcel-bundler/src/builtins/css-loader.js"}],"index.js":[function(require,module,exports) {
+"use strict";
 
 var _didact = require("./src/didact");
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+require("./index.css");
 
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+/** @jsx createElement */
+var randomLikes = function randomLikes() {
+  return Math.ceil(Math.random() * 100);
+};
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /** @jsx createElement */
+var stories = [{
+  name: "Didact introduction",
+  likes: randomLikes()
+}, {
+  name: "Rendering DOM elements ",
+  likes: randomLikes()
+}, {
+  name: "Element creation and JSX",
+  likes: randomLikes()
+}, {
+  name: "Instances and reconciliation",
+  likes: randomLikes()
+}, {
+  name: "Components and state",
+  likes: randomLikes()
+}];
 
+var appElement = function appElement() {
+  return (0, _didact.createElement)(
+    "div",
+    null,
+    (0, _didact.createElement)(
+      "ul",
+      null,
+      stories.map(storyElement)
+    )
+  );
+};
 
-var App = function (_Component) {
-  _inherits(App, _Component);
-
-  function App() {
-    _classCallCheck(this, App);
-
-    var _this = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this));
-
-    _this.state = { test: 123 };
-    return _this;
-  }
-
-  _createClass(App, [{
-    key: "click",
-    value: function click() {
-      this.setState({ test: this.state.test + 1 });
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      return (0, _didact.createElement)(
-        "div",
+function storyElement(story) {
+  return (0, _didact.createElement)(
+    "li",
+    null,
+    (0, _didact.createElement)(
+      "button",
+      { onClick: function onClick(e) {
+          return handleClick(story);
+        } },
+      story.likes,
+      (0, _didact.createElement)(
+        "b",
         null,
-        " ",
-        "hello boop, this is didact.js ",
-        this.state.test,
-        " running in parcel",
-        " ",
-        (0, _didact.createElement)(
-          "button",
-          { onClick: this.click.bind(this) },
-          "test "
-        )
-      );
-    }
-  }]);
+        "\u2764\uFE0F"
+      )
+    ),
+    story.name
+  );
+}
 
-  return App;
-}(_didact.Component);
+function handleClick(story) {
+  story.likes += 1;
+  (0, _didact.render)(appElement(), document.getElementById("app"));
+}
 
-(0, _didact.render)((0, _didact.createElement)(App, null), document.getElementById("app"));
-},{"./src/didact":"src/didact.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+(0, _didact.render)(appElement(), document.getElementById("app"));
+
+// class App extends Component {
+//   constructor() {
+//     super();
+//     this.state = { test: 123 };
+//   }
+//   click() {
+//     this.setState({ test: this.state.test + 1 });
+//   }
+//   render() {
+//     return (
+//       <div>
+//         {" "}
+//         hello boop, this is didact.js {this.state.test} running in parcel{" "}
+//         <button onClick={this.click.bind(this)}>test </button>
+//       </div>
+//     );
+//   }
+// }
+
+// render(<App />, document.getElementById("app"));
+},{"./src/didact":"src/didact.js","./index.css":"index.css"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 
@@ -436,7 +452,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '61275' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '63970' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 

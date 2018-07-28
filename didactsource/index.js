@@ -1,20 +1,27 @@
 /** @jsx createElement */
 import { render, createElement, Component } from "./src/didact";
 
+class LabeledSlider extends Component {
+  render() {
+    const {value, onInput} = this.props
+    return <input type="range" onInput={onInput} min={20} max={80} value={value}/>
+  }
+}
+
 class App extends Component {
   constructor() {
     super();
-    this.state = { test: 123 };
+    this.state = { value: 40 };
   }
-  click() {
-    this.setState({ test: this.state.test + 1 });
+  onInput(e) {
+    this.setState({ value: e.target.value });
   }
   render() {
+    const {value} = this.state
     return (
       <div>
-        {" "}
-        hello boop, this is didact.js {this.state.test} running in parcel{" "}
-        <button onClick={this.click.bind(this)}>test </button>
+        <LabeledSlider onInput={this.onInput.bind(this)} value={value}/>
+        {value}
       </div>
     );
   }

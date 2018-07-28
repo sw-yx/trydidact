@@ -366,39 +366,56 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /** @jsx createElement */
 
 
-var App = function (_Component) {
-  _inherits(App, _Component);
+var LabeledSlider = function (_Component) {
+  _inherits(LabeledSlider, _Component);
+
+  function LabeledSlider() {
+    _classCallCheck(this, LabeledSlider);
+
+    return _possibleConstructorReturn(this, (LabeledSlider.__proto__ || Object.getPrototypeOf(LabeledSlider)).apply(this, arguments));
+  }
+
+  _createClass(LabeledSlider, [{
+    key: "render",
+    value: function render() {
+      var _props = this.props,
+          value = _props.value,
+          onInput = _props.onInput;
+
+      return (0, _didact.createElement)("input", { type: "range", onInput: onInput, min: 20, max: 80, value: value });
+    }
+  }]);
+
+  return LabeledSlider;
+}(_didact.Component);
+
+var App = function (_Component2) {
+  _inherits(App, _Component2);
 
   function App() {
     _classCallCheck(this, App);
 
-    var _this = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this));
+    var _this2 = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this));
 
-    _this.state = { test: 123 };
-    return _this;
+    _this2.state = { value: 40 };
+    return _this2;
   }
 
   _createClass(App, [{
-    key: "click",
-    value: function click() {
-      this.setState({ test: this.state.test + 1 });
+    key: "onInput",
+    value: function onInput(e) {
+      this.setState({ value: e.target.value });
     }
   }, {
     key: "render",
     value: function render() {
+      var value = this.state.value;
+
       return (0, _didact.createElement)(
         "div",
         null,
-        " ",
-        "hello boop, this is didact.js ",
-        this.state.test,
-        " running in parcel",
-        " ",
-        (0, _didact.createElement)(
-          "button",
-          { onClick: this.click.bind(this) },
-          "test "
-        )
+        (0, _didact.createElement)(LabeledSlider, { onInput: this.onInput.bind(this), value: value }),
+        value
       );
     }
   }]);
@@ -436,7 +453,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '61275' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '62445' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 

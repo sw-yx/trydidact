@@ -397,7 +397,7 @@ var App = function (_Component2) {
 
     var _this2 = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this));
 
-    _this2.state = { value: 40 };
+    _this2.state = { value: '40' };
     return _this2;
   }
 
@@ -411,6 +411,7 @@ var App = function (_Component2) {
     value: function render() {
       var value = this.state.value;
 
+      console.log({ value: value });
       return (0, _didact.createElement)(
         "div",
         null,
@@ -453,7 +454,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '62445' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '58974' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 

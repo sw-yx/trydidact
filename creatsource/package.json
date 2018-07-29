@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "parcel-bundler": "^1.9.7",
+    "zen-observable": "^0.8.9"
+  },
+  "scripts": {
+    "start": "parcel index.html"
+  },
+  "name": "creatsource",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT"
+}

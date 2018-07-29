@@ -11,13 +11,14 @@ class LabeledSlider extends Component {
 class App extends Component {
   constructor() {
     super();
-    this.state = { value: 40 };
+    this.state = { value: '40' };
   }
   onInput(e) {
     this.setState({ value: e.target.value });
   }
   render() {
     const {value} = this.state
+    console.log({value})
     return (
       <div>
         <LabeledSlider onInput={this.onInput.bind(this)} value={value}/>

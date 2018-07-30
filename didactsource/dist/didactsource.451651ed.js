@@ -317,6 +317,7 @@ function reloadCSS() {
     return;
   }
 
+<<<<<<< HEAD
   cssTimeout = setTimeout(function () {
     var links = document.querySelectorAll('link[rel="stylesheet"]');
     for (var i = 0; i < links.length; i++) {
@@ -324,11 +325,39 @@ function reloadCSS() {
         updateLink(links[i]);
       }
     }
+=======
+var LabeledSlider = function (_Component) {
+  _inherits(LabeledSlider, _Component);
+
+  function LabeledSlider() {
+    _classCallCheck(this, LabeledSlider);
+
+    return _possibleConstructorReturn(this, (LabeledSlider.__proto__ || Object.getPrototypeOf(LabeledSlider)).apply(this, arguments));
+  }
+
+  _createClass(LabeledSlider, [{
+    key: "render",
+    value: function render() {
+      var _props = this.props,
+          value = _props.value,
+          onInput = _props.onInput;
+
+      return (0, _didact.createElement)("input", { type: "range", onInput: onInput, min: 20, max: 80, value: value });
+    }
+  }]);
+
+  return LabeledSlider;
+}(_didact.Component);
+
+var App = function (_Component2) {
+  _inherits(App, _Component2);
+>>>>>>> DidactObservable2
 
     cssTimeout = null;
   }, 50);
 }
 
+<<<<<<< HEAD
 module.exports = reloadCSS;
 },{"./bundle-url":"node_modules/parcel-bundler/src/builtins/bundle-url.js"}],"index.css":[function(require,module,exports) {
 
@@ -339,6 +368,33 @@ module.hot.accept(reloadCSS);
 "use strict";
 
 var _didact = require("./src/didact");
+=======
+    var _this2 = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this));
+
+    _this2.state = { value: '40' };
+    return _this2;
+  }
+
+  _createClass(App, [{
+    key: "onInput",
+    value: function onInput(e) {
+      this.setState({ value: e.target.value });
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var value = this.state.value;
+
+      console.log({ value: value });
+      return (0, _didact.createElement)(
+        "div",
+        null,
+        (0, _didact.createElement)(LabeledSlider, { onInput: this.onInput.bind(this), value: value }),
+        value
+      );
+    }
+  }]);
+>>>>>>> DidactObservable2
 
 require("./index.css");
 
@@ -459,7 +515,11 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+<<<<<<< HEAD
   var ws = new WebSocket(protocol + '://' + hostname + ':' + '59046' + '/');
+=======
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '58974' + '/');
+>>>>>>> DidactObservable2
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 

@@ -2,21 +2,31 @@
 import { render, createElement, Component } from "./src/didact";
 import "./index.css"
 
+class LabeledSlider extends Component {
+  render() {
+    const {value, onInput} = this.props
+    return <input type="range" onInput={onInput} min={20} max={80} value={value}/>
+  }
+}
 
-// // this is cyclejs https://jsbin.com/yojoho/embed?js,output
-let state = 50
-const appElement = () => (
-  <div>
-    {LabeledSlider()}
-    <div>{state}</div>
-  </div>
-)
-function LabeledSlider() {
-  return <input type="range" min={20} max={80} value={state} 
-  onInput={e => {
-    state = e.target.value;
-    render(appElement(), document.getElementById("app"));
-  }}/>
+class App extends Component {
+  constructor() {
+    super();
+    this.state = { value: '40' };
+  }
+  onInput(e) {
+    this.setState({ value: e.target.value });
+  }
+  render() {
+    const {value} = this.state
+    console.log({value})
+    return (
+      <div>
+        <LabeledSlider onInput={this.onInput.bind(this)} value={value}/>
+        {value}
+      </div>
+    );
+  }
 }
 
 

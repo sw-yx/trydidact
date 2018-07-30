@@ -1,11 +1,12 @@
 import { createElement } from "./element";
 import { Component } from "./component";
-import { render } from "./reconciler";
+import { mount, INITIALSOURCE } from "./reconciler";
 
 export default {
+  INITIALSOURCE,
   createElement,
   Component,
-  render
+  mount
 };
 
-export { createElement, Component, render };
+export { createElement, Component, INITIALSOURCE, mount };

@@ -1,10 +1,27 @@
 import Observable from 'zen-observable'
+export { merge, combineLatest, zip } from 'zen-observable/extras'
+
+export function Ticker(tick = 1000) {
+  return new Observable(observer => {
+    let timer = () => setTimeout(() => {
+      observer.next('tick');
+      timer()
+      // observer.complete();
+    }, tick);
+    timer()
+  
+    // On unsubscription, cancel the timer
+    return () => clearTimeout(timer);
+
+  })
+}
 
 export function fromEvent(el, eventType) {
   return new Observable(observer => {
-    el.addEventListener(eventType, e => observer.next(e))
+    const handler = e => observer.next(e)
+    el.addEventListener(eventType, handler)
     // on unsub, remove event listener
-    return () => console.log('not implemented yet')
+    return () => el.removeEventListener(eventType, handler)
   })
 }
 
@@ -17,14 +34,5 @@ export function scan(obs, cb, initial) {
       if (acc !== INIT) acc = cb(acc, val)
       observer.next(acc)
     })
-  })
-}
-
-
-export function merge(...obsArgs) {
-  return new Observable(observer => {
-    const subs = obsArgs.map(obs => obs.subscribe(x => observer.next(x)))
-    // todo: handle unsubscribe haha
-    return () => subs.forEach(sub => sub()) // untested, hope it works
   })
 }
